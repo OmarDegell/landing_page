@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorry Habiba</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+<style>
+  :root {
+    --bg: #fff5f7;
+    --text: #3b2a30;
+    --soft: #8c7479;
+    --pink: #e84a6f;
+    --gray: #ece4e6;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .screen {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+  }
+  .emoji { font-size: 3.5rem; margin-bottom: 8px; }
+  h1 { font-size: clamp(2rem, 8vw, 2.8rem); font-weight: 600; margin: 0 0 8px; }
+  h1 span { color: var(--pink); }
+  .msg { color: var(--soft); font-size: 1.05rem; margin: 0 0 32px; max-width: 22rem; }
+
+  .buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 24px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #yes {
+    background: var(--pink);
+    color: #fff;
+    transition: transform .2s ease;
+  }
+  #no {
+    background: var(--gray);
+    color: var(--text);
+    transition: left .3s ease, top .3s ease;
+  }
+  #no.moving { position: fixed; z-index: 10; }
+  button:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+
+  .hint { color: var(--pink); margin-top: 20px; min-height: 1.5em; }
+
+  button:disabled { cursor: default; opacity: .55; }
+  #yes:disabled { opacity: 1; background: #c9a3ad; }
+
+  /* I love you message */
+  #love { margin-top: 8px; animation: pop .6s ease both; }
+  #love h1 { font-size: clamp(2.4rem, 10vw, 3.8rem); color: var(--pink); margin: 0; }
+  #love .heart { font-size: 3.5rem; color: var(--pink); animation: beat 1.2s infinite; }
+  #love .msg { color: var(--text); margin: 8px auto 0; }
+  @keyframes pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+  @keyframes beat { 0%,100% { transform: scale(1); } 20% { transform: scale(1.15); } 40% { transform: scale(1); } }
+
+  #hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .float {
+    position: absolute;
+    bottom: -40px;
+    color: var(--pink);
+    opacity: .7;
+    animation: up linear forwards;
+  }
+  @keyframes up { to { transform: translateY(-110vh); opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    #love, #love .heart, .float { animation: none; }
+    #no, #yes { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen" id="sorry">
+  <div class="emoji">🥺</div>
+  <h1>Sorry, <span>Habiba</span></h1>
+  <p class="msg">I know I upset you and I'm really sorry. Please forgive me?</p>
+  <div class="buttons">
+    <button id="yes" type="button">I accept your apology ❤</button>
+    <button id="no" type="button">I don't accept your apology</button>
+  </div>
+  <p class="hint" id="hint"></p>
+  <div id="love" hidden>
+    <div class="heart">❤</div>
+    <h1>I love you, Habiba</h1>
+    <p class="msg">You are my favourite person in the whole world ❤</p>
+  </div>
+</div>
+
+<div id="hearts"></div>
+
+<script>
+  var no = document.getElementById('no');
+  var yes = document.getElementById('yes');
+  var hint = document.getElementById('hint');
+  var lines = ["Nope 😜", "Are you sure?", "Just accept it ❤", "Pleeease?", "You can't catch it!"];
+  var count = 0;
+
+  function moveNo(e) {
+    if (e) e.preventDefault();
+    if (no.disabled) return;
+    var r = no.getBoundingClientRect();
+    if (!no.classList.contains('moving')) {
+      no.style.left = r.left + 'px';
+      no.style.top = r.top + 'px';
+      no.classList.add('moving');
+      no.offsetWidth;
+    }
+    var x, y, i = 0;
+    do {
+      x = 16 + Math.random() * (innerWidth - r.width - 32);
+      y = 16 + Math.random() * (innerHeight - r.height - 32);
+      i++;
+    } while (i < 20 && Math.abs(x - r.left) < 120 && Math.abs(y - r.top) < 80);
+    no.style.left = Math.max(16, x) + 'px';
+    no.style.top = Math.max(16, y) + 'px';
+
+    hint.textContent = lines[count % lines.length];
+    count++;
+    yes.style.transform = 'scale(' + Math.min(1 + count * 0.07, 1.5) + ')';
+  }
+
+  no.addEventListener('mouseenter', function () { moveNo(); });
+  no.addEventListener('pointerdown', moveNo);
+  no.addEventListener('click', moveNo);
+
+  yes.addEventListener('click', function () {
+    if (yes.disabled) return;
+    yes.disabled = true;
+    no.disabled = true;
+    yes.textContent = 'Apology accepted ❤';
+    yes.style.transform = '';
+    no.classList.remove('moving');
+    no.style.left = no.style.top = '';
+    hint.textContent = '';
+    document.querySelector('#sorry .emoji').textContent = '🥰';
+    document.getElementById('love').hidden = false;
+    var box = document.getElementById('hearts');
+    setInterval(function () {
+      var h = document.createElement('span');
+      h.className = 'float';
+      h.textContent = '❤';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.fontSize = (14 + Math.random() * 24) + 'px';
+      h.style.animationDuration = (4 + Math.random() * 4) + 's';
+      box.appendChild(h);
+      setTimeout(function () { h.remove(); }, 8000);
+    }, 250);
+  });
+</script>
+
+</body>
+</html>
